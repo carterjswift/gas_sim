@@ -17,10 +17,9 @@ class Collideable(ABC):
 
 class Wall(Collideable):
 
-    def __init__(self, norm, start, length):
+    def __init__(self, norm, pos):
         self.norm = norm
-        self.start = start
-        self.length = length
+        self.pos = pos
 
     def collide(self, other):
         if isinstance(other,Wall):
@@ -85,3 +84,17 @@ class Atom(Collideable):
         p_fin = np.add(np.multiply(other.mass,other.getv()),np.multiply(self.mass,self.v))
 
         return np.subtract(p_fin,p_init)
+
+    def forecast(self,other):
+        if isinstance(other, Wall):
+            if np.dot(self.v,other.norm) == 0:
+                return None
+            t = other.pos - self.radius - np.dot(self.pos,other.norm) / np.dot(self.v,other.norm)
+        else:
+            pass
+        self.start = start
+
+        if t >= 0:
+            return t
+
+        return None
