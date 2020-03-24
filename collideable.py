@@ -32,7 +32,7 @@ class Wall(Collideable):
         other.setv(np.subtract(v_perp, v_par))
 
         # Return the change in momentum of the particle
-        return np.multiply(other.mass, np.subtract(initialv,other.getv()))
+        return np.multiply(other.mass, np.subtract(other.getv(),initialv))
 
     def getv(self):
         return [0,0]
@@ -57,6 +57,9 @@ class Atom(Collideable):
     def collide(self, other):
         if isinstance(other,Wall):
             return other.collide(self)
+
+        vis = self.v
+        vio = other.getv()
         
         #calculate collision normal vector
         col_norm = np.linalg.norm(np.subtract(self.pos,other.pos))
@@ -77,4 +80,8 @@ class Atom(Collideable):
         other.setv(np.add(ov_perp,ov_parf))
         self.v = np.add(sv_perp,sv_parf)
 
-        #TODO: return the total momentum change of the collision (should be zero)
+        #return the total momentum change of the collision (should be zero)
+        p_init = np.add(np.multiply(other.mass, vio),np.multiply(self.mass,vis))
+        p_fin = np.add(np.multiply(other.mass,other.getv()),np.multiply(self.mass,self.v))
+
+        return np.subtract(p_fin,p_init)
