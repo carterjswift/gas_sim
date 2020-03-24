@@ -92,7 +92,6 @@ class Atom(Collideable):
             t = other.pos - self.radius - np.dot(self.pos,other.norm) / np.dot(self.v,other.norm)
         else:
             pass
-        self.start = start
 
         if t >= 0:
             return t
