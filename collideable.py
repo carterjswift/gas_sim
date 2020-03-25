@@ -18,7 +18,7 @@ class Collideable(ABC):
 class Wall(Collideable):
 
     def __init__(self, norm, pos):
-        self.norm = norm
+        self.norm = np.divide(norm,np.linalg.norm(norm))
         self.pos = pos
 
     def collide(self, other):
@@ -61,7 +61,7 @@ class Atom(Collideable):
         vio = other.getv()
         
         #calculate collision normal vector
-        col_norm = np.linalg.norm(np.subtract(self.pos,other.pos))
+        col_norm = np.divide(np.subtract(self.pos,other.pos),np.linalg.norm(np.subtract(self.pos,other.pos)))
 
         #project velocities into collision coordinate system
         sv_par = np.multiply(col_norm, np.dot(self.v,col_norm))
@@ -89,9 +89,25 @@ class Atom(Collideable):
         if isinstance(other, Wall):
             if np.dot(self.v,other.norm) == 0:
                 return None
-            t = other.pos - self.radius - np.dot(self.pos,other.norm) / np.dot(self.v,other.norm)
+            t = (other.pos - self.radius - np.dot(self.pos,other.norm)) / np.dot(self.v,other.norm)
         else:
-            pass
+            t = 0
+            fut_poss = np.add(self.pos,np.multiply(t,self.v))
+            fut_poso = np.add(other.pos,np.multiply(t,other.v))
+            dist = np.linalg.norm(np.subtract(fut_poss,fut_poso))
+            min_dist = dist
+
+            while dist > self.radius + other.radius:
+                t+=0.0001 
+                fut_poss = np.add(self.pos,np.multiply(t,self.v))
+                fut_poso = np.add(other.pos,np.multiply(t,other.v))
+                dist = np.linalg.norm(np.subtract(fut_poss,fut_poso))
+
+                if dist > min_dist:
+                    return None
+                
+                min_dist = dist
+                
 
         if t >= 0:
             return t
