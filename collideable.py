@@ -53,6 +53,9 @@ class Atom(Collideable):
     def setv(self, v):
         self.v = v
 
+    def move(self, time):
+        self.pos = np.add(np.multiply(time,self.v))
+
     def collide(self, other):
         if isinstance(other,Wall):
             return other.collide(self)
@@ -98,7 +101,7 @@ class Atom(Collideable):
             min_dist = dist
 
             while dist > self.radius + other.radius:
-                t+=0.0001 
+                t+=0.000001 
                 fut_poss = np.add(self.pos,np.multiply(t,self.v))
                 fut_poso = np.add(other.pos,np.multiply(t,other.v))
                 dist = np.linalg.norm(np.subtract(fut_poss,fut_poso))
