@@ -94,6 +94,9 @@ class Atom(Collideable):
                 return None
             t = (other.pos - self.radius - np.dot(self.pos,other.norm)) / np.dot(self.v,other.norm)
         else:
+            if np.dot(np.subtract(self.v,other.v),np.subtract(self.pos,other.pos)) < 0:
+                return None
+
             t = 0
             fut_poss = np.add(self.pos,np.multiply(t,self.v))
             fut_poso = np.add(other.pos,np.multiply(t,other.v))
