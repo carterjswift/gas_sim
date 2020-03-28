@@ -1,3 +1,4 @@
+import sys
 from abc import ABC, abstractmethod
 import numpy as np
 
@@ -30,6 +31,7 @@ class Wall(Collideable):
 
         other.setv(np.subtract(v_perp, v_par))
 
+
         # Return the change in momentum of the particle
         return np.multiply(other.mass, np.subtract(other.getv(),initialv))
 
@@ -54,7 +56,8 @@ class Atom(Collideable):
         self.v = v
 
     def move(self, time):
-        self.pos = np.add(np.multiply(time,self.v))
+        self.pos = np.add(self.pos,np.multiply(time,self.v))
+
 
     def collide(self, other):
         if isinstance(other,Wall):
@@ -71,16 +74,23 @@ class Atom(Collideable):
         ov_par = np.multiply(col_norm,np.dot(other.getv(),col_norm))
 
         sv_perp = self.v - sv_par
-        ov_perp = other.getv() - sv_perp
+        ov_perp = other.getv() - ov_par
 
 
         #perform collision with transformed vectors
-        sv_parf = (self.mass - other.mass)/(self.mass + other.mass)*sv_par + 2*other.mass/(self.mass+other.mass)*ov_par
-        ov_parf = (other.mass - self.mass)/(other.mass + self.mass)*ov_par + 2*self.mass/(other.mass+self.mass)*sv_par
+        sv_parf = ov_par
+        ov_parf = sv_par
 
         #reconstruct xy velocities from collision components
         other.setv(np.add(ov_perp,ov_parf))
         self.v = np.add(sv_perp,sv_parf)
+
+        try:
+            assert np.dot(self.v,self.v) + np.dot(other.v,other.v) <= 1.01 * (np.dot(vis,vis) + np.dot(vio,vio))
+            assert np.dot(self.v,self.v) + np.dot(other.v,other.v) >= 0.99 * (np.dot(vis,vis) + np.dot(vio,vio))
+        except AssertionError:
+            print(np.dot(self.v,self.v) + np.dot(other.v,other.v), np.dot(vis,vis) + np.dot(vio,vio))
+            sys.exit()
 
         #return the total momentum change of the collision (should be zero)
         p_init = np.add(np.multiply(other.mass, vio),np.multiply(self.mass,vis))
@@ -89,8 +99,10 @@ class Atom(Collideable):
         return np.subtract(p_fin,p_init)
 
     def forecast(self,other):
+        if other == self:
+            return None
         if isinstance(other, Wall):
-            if np.dot(self.v,other.norm) == 0:
+            if np.dot(self.v,other.norm) < 0:
                 return None
             t = (other.pos - self.radius - np.dot(self.pos,other.norm)) / np.dot(self.v,other.norm)
         else:
@@ -102,9 +114,13 @@ class Atom(Collideable):
             fut_poso = np.add(other.pos,np.multiply(t,other.v))
             dist = np.linalg.norm(np.subtract(fut_poss,fut_poso))
             min_dist = dist
+            
+            #don't collide if the atoms already intersect; needed to avoid odd behavior on startup
+            #if dist < self.radius + other.radius:
+            #    return None
 
             while dist > self.radius + other.radius:
-                t+=0.000001 
+                t+=0.0000001 
                 fut_poss = np.add(self.pos,np.multiply(t,self.v))
                 fut_poso = np.add(other.pos,np.multiply(t,other.v))
                 dist = np.linalg.norm(np.subtract(fut_poss,fut_poso))
