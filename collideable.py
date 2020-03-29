@@ -8,38 +8,27 @@ class Collideable(ABC):
     def collide(self, other):
         pass
 
-    @abstractmethod
-    def getv(self):
-        pass
-
-    @abstractmethod
-    def setv(self,newv):
-        pass
-
 class Wall(Collideable):
 
     def __init__(self, norm, pos):
+        #make sure normal vector of wall is normalized
         self.norm = np.divide(norm,np.linalg.norm(norm))
+
         self.pos = pos
 
     def collide(self, other):
         if isinstance(other,Wall):
             return
-        initialv = other.getv()
+
+        #perform collision
+        initialv = other.v
         v_par = np.multiply(self.norm,np.dot(initialv, self.norm) / np.dot(self.norm, self.norm))
         v_perp = initialv - v_par
-
-        other.setv(np.subtract(v_perp, v_par))
+        other.v = np.subtract(v_perp, v_par)
 
 
         # Return the change in momentum of the particle
-        return np.multiply(other.mass, np.subtract(other.getv(),initialv))
-
-    def getv(self):
-        return [0,0]
-
-    def setv(self,newv):
-        pass
+        return np.multiply(other.mass, np.subtract(other.v,initialv))
 
 class Atom(Collideable):
 
@@ -49,12 +38,6 @@ class Atom(Collideable):
         self.pos = pos
         self.v = v
     
-    def getv(self):
-        return self.v
-
-    def setv(self, v):
-        self.v = v
-
     def move(self, time):
         self.pos = np.add(self.pos,np.multiply(time,self.v))
 
@@ -64,17 +47,17 @@ class Atom(Collideable):
             return other.collide(self)
 
         vis = self.v
-        vio = other.getv()
+        vio = other.v
         
         #calculate collision normal vector
         col_norm = np.divide(np.subtract(self.pos,other.pos),np.linalg.norm(np.subtract(self.pos,other.pos)))
 
         #project velocities into collision coordinate system
         sv_par = np.multiply(col_norm, np.dot(self.v,col_norm))
-        ov_par = np.multiply(col_norm,np.dot(other.getv(),col_norm))
+        ov_par = np.multiply(col_norm,np.dot(other.v,col_norm))
 
         sv_perp = self.v - sv_par
-        ov_perp = other.getv() - ov_par
+        ov_perp = other.v - ov_par
 
 
         #perform collision with transformed vectors
@@ -82,7 +65,7 @@ class Atom(Collideable):
         ov_parf = sv_par
 
         #reconstruct xy velocities from collision components
-        other.setv(np.add(ov_perp,ov_parf))
+        other.v = np.add(ov_perp,ov_parf)
         self.v = np.add(sv_perp,sv_parf)
 
         try:
@@ -94,10 +77,11 @@ class Atom(Collideable):
 
         #return the total momentum change of the collision (should be zero)
         p_init = np.add(np.multiply(other.mass, vio),np.multiply(self.mass,vis))
-        p_fin = np.add(np.multiply(other.mass,other.getv()),np.multiply(self.mass,self.v))
+        p_fin = np.add(np.multiply(other.mass,other.v),np.multiply(self.mass,self.v))
 
         return np.subtract(p_fin,p_init)
 
+    #predict when a collision will occur between self and other
     def forecast(self,other):
         if other == self:
             return None
@@ -115,10 +99,7 @@ class Atom(Collideable):
             dist = np.linalg.norm(np.subtract(fut_poss,fut_poso))
             min_dist = dist
             
-            #don't collide if the atoms already intersect; needed to avoid odd behavior on startup
-            #if dist < self.radius + other.radius:
-            #    return None
-
+            #advance time of possible collision until atoms touch
             while dist > self.radius + other.radius:
                 t+=0.0000001 
                 fut_poss = np.add(self.pos,np.multiply(t,self.v))

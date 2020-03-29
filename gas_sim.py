@@ -16,70 +16,75 @@ def run_sim(duration, num_atoms, volume, energy, mass, radius):
         col_dict[atom] = 0
     sim_time = 0
     num_events = 0
-    prev_col_time = 0
 
-    position = np.array(get_all_pos(atoms))
-    sns.set_style('darkgrid')
-    sns.scatterplot(position[:,0],position[:,1])
-    plt.xlim([-volume**(1/3),volume**(1/3)])
-    plt.ylim([-volume**(1/3),volume**(1/3)])
-    plt.title(str(sim_time))
+    #position = np.array(get_all_pos(atoms))
+    #sns.set_style('darkgrid')
+    #sns.scatterplot(position[:,0],position[:,1])
+    #plt.xlim([-volume**(1/3),volume**(1/3)])
+    #plt.ylim([-volume**(1/3),volume**(1/3)])
+    #plt.title(str(sim_time))
 
-    plt.savefig("pos/0.png")
+    #plt.savefig("pos/0.png")
+
     num_events = 1
 
     while sim_time < duration:
+        #get next event
         event = heapq.heappop(event_queue)
 
+        #extract event details
         p1, p2, with_wall, pred_cols = event.collision
         col_time = event.t
-
-        #disallow simultaneous collisions to avoid particles getting stuck in eachother
-        #if col_time == prev_col_time and prev_col_time != 0:
-        #    continue
 
         p_cols = col_dict[p1]
         if not with_wall:
             p_cols += col_dict[p2]
 
+        #if either particle has collided since this event was predicted, collision is no longer valid
         if p_cols > pred_cols:
             continue
         num_events += 1
 
         if not with_wall:
+            #for debugging and to get a sense of progress when simulation is running
             print("#########",col_time, p1, p2)
         else:
             #print(col_time,p1,p2)
             pass
-        prev_col_time = col_time
 
+        #advance state of simulation to the time that the event should occur
         move_all(atoms,sim_time,col_time)
         sim_time = col_time
 
+        #perform collision
         p1.collide(p2)
 
+        #update number of collisions for each atom involved in the event
         col_dict[p1] += 1
         if not with_wall:
             col_dict[p2] += 1
-        refind_events(event_queue,p1,atoms,walls,sim_time,col_dict, ignore=p2)
 
+        #predict new events for involved atoms
+        refind_events(event_queue,p1,atoms,walls,sim_time,col_dict, ignore=p2)
         if not with_wall:
             refind_events(event_queue,p2,atoms,walls,sim_time,col_dict,ignore=p1)
 
-        position = np.array(get_all_pos(atoms))
-        plt.cla()
-        sns.scatterplot(x=position[:,0],y=position[:,1])
-        plt.xlim([-volume**(1/3),volume**(1/3)])
-        plt.ylim([-volume**(1/3),volume**(1/3)])
-        plt.title(str(sim_time))
-        name = "pos/" + str(num_events)
-        name = name + ".png"
-        plt.savefig(name)
+        #Plotting code for purpose of making animation
+        #position = np.array(get_all_pos(atoms))
+        #plt.cla()
+        #sns.scatterplot(x=position[:,0],y=position[:,1])
+        #plt.xlim([-volume**(1/3),volume**(1/3)])
+        #plt.ylim([-volume**(1/3),volume**(1/3)])
+        #plt.title(str(sim_time))
+        #name = "pos/" + str(num_events)
+        #name = name + ".png"
+        #plt.savefig(name)
         
+    #Show distribution of particle speeds after sim has run
     s = get_all_speed(atoms)
     print(s)
     print(num_events)
-    #sns.set_style('darkgrid')
+    sns.set_style('darkgrid')
     plt.figure()
     sns.distplot(s)
     plt.show()
@@ -88,7 +93,7 @@ def run_sim(duration, num_atoms, volume, energy, mass, radius):
 
 
     
-#builds distribution of atoms in center of box with same velocity in random direction
+#builds distribution of atoms in center-ish of box with same velocity in random direction
 def build_atoms(num_atoms, energy, volume,mass, radius):
     vel = (energy * 2 / mass / num_atoms)**(1/2)
     atoms = []
@@ -96,10 +101,12 @@ def build_atoms(num_atoms, energy, volume,mass, radius):
     positions = []
 
     for _ in range(num_atoms):
+        #get random direction and position
         dir = [random.random() - 0.5 for j in range(3)]
         dir_unit = np.divide(dir,np.linalg.norm(dir))
         pos = [(random.random()-0.5)* 2 * max_coord for j in range(3)]
         
+        #don't allow atoms to start inside of eachother
         while intersects(pos,positions,radius):
            print("changing position")
            pos = [(random.random()-0.5)* 2 * max_coord for j in range(3)]
@@ -191,4 +198,5 @@ def intersects(pos, positions,radius):
             return True
     return False
 
-run_sim(10000,800,600,100,2,0.5)
+#Run the simulation
+run_sim(1000,800,600,100,2,0.5)
