@@ -8,7 +8,7 @@ import scipy.stats
 from collideable import Atom, Wall
 
 
-def run_sim(duration, num_atoms, volume, energy, mass, radius, mb_dis):
+def run_sim(event_limit, num_atoms, volume, energy, mass, radius, mb_dis=False, animate=False,interact=False):
     walls = build_walls(volume)
     atoms = build_atoms(num_atoms, energy, volume, mass, radius, mb_dis)
     print("finding events")
@@ -20,25 +20,29 @@ def run_sim(duration, num_atoms, volume, energy, mass, radius, mb_dis):
     sim_time = 0
     num_events = 0
 
-    #position = np.array(get_all_pos(atoms))
-    # sns.set_style('darkgrid')
-    # sns.scatterplot(position[:,0],position[:,1])
-    # plt.xlim([-volume**(1/3),volume**(1/3)])
-    # plt.ylim([-volume**(1/3),volume**(1/3)])
-    # plt.title(str(sim_time))
-
-    # plt.savefig("pos/0.png")
-
     delta_p_tot = 0
 
-    s = get_all_speed(atoms)
     sns.set_style('darkgrid')
-    plt.figure()
-    sns.distplot(s)
-    plt.show()
+    if animate:
+        s = get_all_speed(atoms)
+        a = math.sqrt(2 * energy / (3 * num_atoms * mass))
+        xs = np.linspace(0,8,100)
+        f = lambda x: scipy.stats.maxwell.pdf(x, scale=a)
+        ys = list(map(f,xs))
+        g = sns.lineplot(xs,ys) #ideal final velocity distribution
+        sns.distplot(s,norm_hist=True,hist=False)
+        axes = g.axes
+        axes.set_xlim(0,8)
+        axes.set_ylim(0,0.4)
 
-    while sim_time < duration:
-        print(f"Simulating. t = {sim_time:.3f}",end='\r')
+        path = "../frames"
+        fileid = 0
+        ext = "png"
+        plt.savefig(f"{path}/{fileid:07}.{ext}")
+    
+
+    while num_events < event_limit:
+        print(f"Simulating. t = {sim_time:.3f}, events = {num_events}",end='\r')
         # get next event
         event = heapq.heappop(event_queue)
 
@@ -89,14 +93,24 @@ def run_sim(duration, num_atoms, volume, energy, mass, radius, mb_dis):
         #name = name + ".png"
         # plt.savefig(name)
 
+        if not with_wall and animate:
+            plt.cla()
+            sns.lineplot(xs,ys)
+            sns.distplot(get_all_speed(atoms),norm_hist=True,hist=False)
+            axes.set_xlim(0,8)
+            axes.set_ylim(0,0.4)
+            fileid += 1
+            plt.savefig(f"{path}/{fileid:07}.{ext}")
+
     print(f"\n{num_events} events occurred",end='\n\n')
 
     # Show distribution of particle speeds after sim has run
+
     s = get_all_speed(atoms)
-    sns.set_style('darkgrid')
-    plt.figure()
-    sns.distplot(s)
-    plt.show()
+    if interact:
+        plt.figure()
+        sns.distplot(s)
+        plt.show()
 
     #calculate pressure
     p = (delta_p_tot / sim_time) / (6 * volume**(2/3))
@@ -109,6 +123,8 @@ def run_sim(duration, num_atoms, volume, energy, mass, radius, mb_dis):
         U += speed**2 * mass / 2
 
     print(f"NkT: {U * 2 / 3}")
+
+    return (p, volume, energy * 2 / 3)
 
 
 
@@ -226,4 +242,5 @@ class Event:
 
 
 # Run the simulation
-run_sim(100, 100, 200, 100, 0.1, 0.1, True)
+if __name__=='__main__':
+    run_sim(10000, 200, 200, 100, 0.1, 0.1, mb_dis=False, animate=False, interact=True)
