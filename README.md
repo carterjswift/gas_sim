@@ -1,11 +1,9 @@
 # gas_sim
 
-## Important: This is a work-in-progress
+This is a final project for my Statistical Mechanics class at Macalester. It is a simulation of a gas using event-driven particle dynamics, which I am using to verify some aspects of stat mech, such as the ideal gas law and the Maxwell-Boltzmann distribution, as well as explore nonideal behavior of gases.
 
-This is a final project for my Statistical Mechanics class at Macalester. It is a simulation of an ideal gas using event-driven particle dynamics, which once complete I will use to verify some aspects of stat mech, such as the ideal gas law.
+### Maxwell-Boltzmann Distribution:
 
-## Preliminary Result: Distribution of Particle Speeds approaches Maxwell-Boltzmann Distribution
+The gif below is produced from animation frames from the simulation, and shows that the velocity distribution of the particles (orange) approaches the Maxwell-Boltzmann distribution (blue) then oscillates about it.
 
-The image below shows the velocity distribution after a simulation run with parameters: t = 10000, vol = 600, n_atoms = 800, particle_mass = 2, particle_radius = 0.5, total_energy = 100. As can be seen, the distribution has the characteristic right-tailed shape of a Maxwell Distribution.
-
-![alt text](n800t10000v600e100m2rhalf.png "Final Velocity Distribution")
+![Animation of particle speeds settling to MB distribution](data/settling.gif)
