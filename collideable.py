@@ -31,7 +31,7 @@ class Wall(Collideable):
         other.v = initialv + deltaV
 
         #return the momentum change of the collision
-        return np.linalg.norm(other.mass * other.v)
+        return np.linalg.norm(other.mass * deltaV)
 
 
 class Atom(Collideable):
