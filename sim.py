@@ -1,17 +1,20 @@
 import heapq
-import seaborn as sns
+import math
+import random
+from typing import Callable, Dict, List, Optional, Tuple, Union
+
 import matplotlib.pyplot as plt
 import numpy as np
-import random
-from typing import List, Tuple, Union, Dict, Callable, Optional
-import math
 import scipy.stats
+import seaborn as sns
+
 from collideable import Atom, Wall
 
 Collideable = Union[Wall, Atom]
 
 
 class Event:
+    """Represents a collision Event occuring at time t."""
     def __init__(self, t: float, collision: Tuple[Atom, Collideable, bool, int]) -> None:
         self.t = t
         self.collision = collision
@@ -29,6 +32,7 @@ def run(event_limit: int,
         animate: bool = False,
         interact: bool = False,
         fpath: str = '../frames') -> Tuple[float, float, float]:
+    """Run the simulation and return pressure, volume, and NkT as a tuple."""
 
     walls: List[Wall] = build_walls(volume)
     atoms: List[Atom] = build_atoms(num_atoms, energy, volume, mass, radius)
@@ -148,6 +152,7 @@ def run(event_limit: int,
 
 # builds distribution of atoms in center-ish of box with same velocity in random direction
 def build_atoms(num_atoms: int, energy: float, volume: float, mass: float, radius: float) -> List[Atom]:
+    """Produce atoms uniformly distributed in posiition space with the same velocity in random directions."""
 
     vels = [(energy * 2 / mass / num_atoms)**(1/2) for i in range(num_atoms)]
 
@@ -175,6 +180,7 @@ def build_atoms(num_atoms: int, energy: float, volume: float, mass: float, radiu
 
 
 def build_walls(volume: float) -> List[Wall]:
+    """Produce the walls that bound the Atoms."""
 
     # create walls that bound a cube with given volume
     pos: float = volume**(1/3) / 2
@@ -190,6 +196,7 @@ def build_walls(volume: float) -> List[Wall]:
 
 # Builds priority queue of events
 def find_events(atoms: List[Atom], walls: List[Wall]) -> List[Event]:
+    """Create and populate the priority queue of Events."""
 
     event_queue: List[Event] = []
     for idx, atom1 in enumerate(atoms):
@@ -213,6 +220,7 @@ def refind_events(event_queue: List[Event],
                     cur_time: float, 
                     col_dict: Dict[Collideable, int], 
                     ignore: Optional[Collideable] = None) -> None:
+    """Recalculate events involving atom and add to the event_queue."""
 
     for atom2 in atoms:
         if atom2 == ignore:
@@ -232,13 +240,14 @@ def refind_events(event_queue: List[Event],
 
 
 def move_all(atoms: List[Atom], cur_time: float, end_time: float) -> None:
-    # update positions of all atoms
+    """Update positions of all atoms."""
     time: float = end_time - cur_time
     for atom in atoms:
         atom.move(time)
 
 
 def get_all_speed(atoms: List[Atom]) -> List[float]:
+    """Get the speed of every atom."""
     s: List[float] = []
     for atom in atoms:
         s.append(np.linalg.norm(atom.v))
@@ -247,6 +256,7 @@ def get_all_speed(atoms: List[Atom]) -> List[float]:
 
 
 def get_all_pos(atoms: List[Atom]) -> List[np.ndarray]:
+    """Get the position of every atom."""
     p: List[np.ndarray] = []
     for atom in atoms:
         p.append(atom.pos)
@@ -254,6 +264,7 @@ def get_all_pos(atoms: List[Atom]) -> List[np.ndarray]:
 
 
 def intersects(pos: List[float], positions: List[List[float]], radius: float) -> bool:
+    """Determine whether a new Atom at position pos will overlap with any previous Atoms at positions in positions."""
     for position in positions:
         if np.linalg.norm(np.subtract(position, pos)) < 2 * radius:
             return True

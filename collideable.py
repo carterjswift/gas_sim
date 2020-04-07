@@ -1,11 +1,13 @@
-import sys
-from typing import List, Optional, Union, Sequence
-from abc import ABC, abstractmethod
-import numpy as np
 import math
+import sys
+from abc import ABC, abstractmethod
+from typing import List, Optional, Sequence, Union
+
+import numpy as np
 
 
 class Collideable(ABC):
+    """Abstract class that Wall and Atom inherit from."""
 
     @abstractmethod
     def collide(self, other) -> Optional[float]:
@@ -13,14 +15,16 @@ class Collideable(ABC):
 
 
 class Wall(Collideable):
+    """Represents a Wall at position pos along normal vector norm."""
 
     def __init__(self, norm: List[float], pos: float) -> None:
-        # make sure normal vector of wall is normalized
+        """Normalize norm and initialize instance variables."""
         self.norm: np.ndarray = np.divide(norm, np.linalg.norm(norm))
 
         self.pos = pos
 
     def collide(self, other: Union['Atom', 'Wall']) -> float:
+        """Calculate the new velocity of an atom colliding with self and return the magnitude of the momentum change."""
         if isinstance(other, Wall):
             return 0
 
@@ -43,9 +47,11 @@ class Atom(Collideable):
         self.v: np.ndarray = np.array(v)
 
     def move(self, time: float):
+        """Calculate new position resulting from moving for time."""
         self.pos = self.pos + time * self.v
 
     def collide(self, other: Union[Wall, 'Atom']) -> float:
+        """Collide with a Wall or other Atom and return the magnitude of the momentum change."""
         if isinstance(other, Wall):
             return other.collide(self)
 
@@ -77,6 +83,7 @@ class Atom(Collideable):
 
     # predict when a collision will occur between self and other
     def forecast(self, other: Union[Wall, 'Atom']) -> Optional[float]:
+        """Predict the future time of a collision between self and other."""
 
         if other == self:
             return None

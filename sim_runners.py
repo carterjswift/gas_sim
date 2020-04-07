@@ -1,12 +1,15 @@
 """This module contains functions to run the simulation under different sets of conditions to produce useful data."""
 
 
+import math
+import time
+from typing import List, Tuple
+
 import numpy as np
 import pandas as pd
-import time
-import math
-from typing import List, Tuple
+
 import sim
+
 
 def volume_sweep(events: int, 
                 num_atoms: int, 

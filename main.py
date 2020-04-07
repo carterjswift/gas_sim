@@ -61,11 +61,12 @@ Usage Notes:
 
 """
 
-import sim_runners as sr
-import sim
 import argparse
 import os
 import sys
+
+import sim
+import sim_runners as sr
 
 p = argparse.ArgumentParser(description='Run a gas simulation')
 p.add_argument('--runmode',dest='mode',type=str, default='single')
