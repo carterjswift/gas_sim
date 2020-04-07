@@ -20,18 +20,17 @@ class Event:
         return self.t < other.t
 
 
-def run_sim(event_limit: int, 
-            num_atoms: int, 
-            volume: float, 
-            energy: float, 
-            mass: float, 
-            radius: float, 
-            mb_dis: bool = False, 
-            animate: bool = False,
-            interact: bool = False) -> Tuple[float, float, float]:
+def run(event_limit: int, 
+        num_atoms: int, 
+        volume: float, 
+        energy: float, 
+        mass: float, 
+        radius: float,
+        animate: bool = False,
+        interact: bool = False) -> Tuple[float, float, float]:
 
     walls: List[Wall] = build_walls(volume)
-    atoms: List[Atom] = build_atoms(num_atoms, energy, volume, mass, radius, mb_dis)
+    atoms: List[Atom] = build_atoms(num_atoms, energy, volume, mass, radius)
 
     print("finding events")
     event_queue: List[Event] = find_events(atoms, walls)
@@ -147,12 +146,9 @@ def run_sim(event_limit: int,
 
 
 # builds distribution of atoms in center-ish of box with same velocity in random direction
-def build_atoms(num_atoms: int, energy: float, volume: float, mass: float, radius: float, mb_dis: bool) -> List[Atom]:
-    if mb_dis:
-        a: float = math.sqrt(2 * energy / (3 * num_atoms * mass))
-        vels: List[float] = list(scipy.stats.maxwell.rvs(scale=a,size=num_atoms))
-    else:
-        vels = [(energy * 2 / mass / num_atoms)**(1/2) for i in range(num_atoms)]
+def build_atoms(num_atoms: int, energy: float, volume: float, mass: float, radius: float) -> List[Atom]:
+
+    vels = [(energy * 2 / mass / num_atoms)**(1/2) for i in range(num_atoms)]
 
     atoms: List[Atom] = []
     # all particles will start in the middle of the box
@@ -261,8 +257,3 @@ def intersects(pos: List[float], positions: List[List[float]], radius: float) ->
         if np.linalg.norm(np.subtract(position, pos)) < 2 * radius:
             return True
     return False
-
-
-# Run the simulation
-if __name__=='__main__':
-    run_sim(10000, 200, 200, 100, 0.1, 0.1, mb_dis=False, animate=False, interact=True)

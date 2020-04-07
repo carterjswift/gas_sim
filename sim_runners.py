@@ -1,14 +1,15 @@
-#this file contains methods to run the simulation for data gathering
+"""This module contains functions to run the simulation under different sets of conditions to produce useful data."""
+
 
 import numpy as np
 import pandas as pd
 import time
 import math
 from typing import List, Tuple
-from sim import run_sim
+import sim
 
-#sweeps across a range of volumes determined by the total particle volume
 def volume_sweep(events: int, num_atoms: int, energy: float, mass: float, radius: float, data_points: int) -> None:
+    """Call sim.run() across a range of volumes and output the resulting data as a csv."""
     part_vol: float = radius**(3) * np.pi * 4/3
     print(part_vol)
     start_vol: float = 4 * num_atoms * part_vol
@@ -22,11 +23,9 @@ def volume_sweep(events: int, num_atoms: int, energy: float, mass: float, radius
     data: List[Tuple[float, float, float]] = []
 
     for vol in vols:
-        point: Tuple[float, float, float] = run_sim(events, num_atoms, vol, energy, mass, radius)
+        point: Tuple[float, float, float] = sim.run(events, num_atoms, vol, energy, mass, radius)
 
         data.append(point)
 
     df: pd.DataFrame = pd.DataFrame(data=data,columns=["Pressure","Volume","Nkt"])
-    df.to_csv('../ideal_gas.csv')
-
-volume_sweep(10000,200,100,0.1,0.1,100)
+    df.to_csv('../vsweep.csv')
