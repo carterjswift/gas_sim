@@ -8,8 +8,15 @@ import math
 from typing import List, Tuple
 import sim
 
-def volume_sweep(events: int, num_atoms: int, energy: float, mass: float, radius: float, data_points: int) -> None:
+def volume_sweep(events: int, 
+                num_atoms: int, 
+                energy: float, 
+                mass: float, 
+                radius: float, 
+                data_points: int, 
+                dpath: str = '..') -> None:
     """Call sim.run() across a range of volumes and output the resulting data as a csv."""
+
     part_vol: float = radius**(3) * np.pi * 4/3
     print(part_vol)
     start_vol: float = 4 * num_atoms * part_vol
@@ -28,4 +35,4 @@ def volume_sweep(events: int, num_atoms: int, energy: float, mass: float, radius
         data.append(point)
 
     df: pd.DataFrame = pd.DataFrame(data=data,columns=["Pressure","Volume","Nkt"])
-    df.to_csv('../vsweep.csv')
+    df.to_csv(f"{dpath}vsweep.csv")

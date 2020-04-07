@@ -27,7 +27,8 @@ def run(event_limit: int,
         mass: float, 
         radius: float,
         animate: bool = False,
-        interact: bool = False) -> Tuple[float, float, float]:
+        interact: bool = False,
+        fpath: str = '../frames') -> Tuple[float, float, float]:
 
     walls: List[Wall] = build_walls(volume)
     atoms: List[Atom] = build_atoms(num_atoms, energy, volume, mass, radius)
@@ -58,7 +59,7 @@ def run(event_limit: int,
         axes.set_xlim(0,8)
         axes.set_ylim(0,0.4)
 
-        path: str = "../frames"
+        path: str = fpath
         fileid: int = 0
         ext: str = "png"
         plt.savefig(f"{path}/{fileid:07}.{ext}")
