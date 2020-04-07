@@ -1,5 +1,5 @@
 import sys
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Sequence
 from abc import ABC, abstractmethod
 import numpy as np
 import math
@@ -20,9 +20,9 @@ class Wall(Collideable):
 
         self.pos = pos
 
-    def collide(self, other: Union['Atom', 'Wall']) -> Optional[float]:
+    def collide(self, other: Union['Atom', 'Wall']) -> float:
         if isinstance(other, Wall):
-            return None
+            return 0
 
         # perform collision
         initialv = other.v
@@ -36,7 +36,7 @@ class Wall(Collideable):
 
 class Atom(Collideable):
 
-    def __init__(self, mass: float, radius: float, pos: List[float], v: List[float]) -> None:
+    def __init__(self, mass: float, radius: float, pos: Sequence[float], v: Sequence[float]) -> None:
         self.mass = mass
         self.radius = radius
         self.pos: np.ndarray = np.array(pos)
@@ -45,7 +45,7 @@ class Atom(Collideable):
     def move(self, time: float):
         self.pos = self.pos + time * self.v
 
-    def collide(self, other: Union[Wall, 'Atom']) -> Optional[float]:
+    def collide(self, other: Union[Wall, 'Atom']) -> float:
         if isinstance(other, Wall):
             return other.collide(self)
 
