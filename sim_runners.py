@@ -2,7 +2,6 @@
 
 
 import math
-import time
 from typing import List, Tuple
 
 import numpy as np
@@ -38,4 +37,31 @@ def volume_sweep(events: int,
         data.append(point)
 
     df: pd.DataFrame = pd.DataFrame(data=data,columns=["Pressure","Volume","Nkt"])
-    df.to_csv(f"{dpath}vsweep.csv")
+    df.to_csv(f"{dpath}/vsweep.csv")
+
+
+def temp_sweep(events: int,
+                num_atoms: int,
+                volume: float,
+                mass: float,
+                radius: float,
+                data_points: int,
+                dpath: str = '..') -> None:
+
+    """Call sim.run() across a range of temperatures and save the results as a CSV."""
+
+    start_energy: float = num_atoms * mass
+    end_energy = 1e6 * start_energy
+    es: np.ndarray = np.linspace(start_energy, end_energy, num=data_points)
+
+    data: List[Tuple[float, float, float]] = []
+
+    for e in es:
+        point: Tuple[float, float, float] = sim.run(events, num_atoms, volume, e, mass, radius)
+
+        data.append(point)
+    
+    df = pd.DataFrame(data, columns=['Pressure', 'Volume', 'NkT'])
+    df.to_csv(f"{dpath}/tsweep.csv")
+
+

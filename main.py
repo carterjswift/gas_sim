@@ -6,9 +6,9 @@ Usage: python main.py [--runmode]
 
 Flags:
 
---runmode: str = 'vsweep' or 'single' (default 'single')
+--runmode: str = 'vsweep', 'tsweep', or 'single' (default 'single')
 
-    Determines how the simulation is run, once or swept across a range of volumes.
+    Determines how the simulation is run, once or swept across a range of volumes or temperatures.
 
 --animate: bool (default False)
 
@@ -25,11 +25,11 @@ Flags:
 
 --volume: float (default 200)
 
-    Only valid if runmode == 'single'. Sets volume of cube in which particles are simulated. 
+    Only valid if runmode == 'single' or 'tsweep'. Sets volume of cube in which particles are simulated. 
 
 --energy: float (default 100)
 
-    The total energy of the particles.
+    The total energy of the particles. Only valid for 'single' and 'vsweep' runmodes.
 
 --mass: float (default 0.1)
 
@@ -56,8 +56,8 @@ Usage Notes:
     aware that a very large number of frames could be produced, and you will need to stitch them together with ffmpeg or gifski
     to create a video or gif.
 
-    -Data from vsweep are saved in data_path/vsweep.csv. This can then be processed however you want, though I would personally
-    recommend using a Jupyter Notebook.
+    -Data from vsweep and tsweep are saved in data_path/vsweep.csv or data_path/tsweep.csv. 
+    This can then be processed however you want, though I would personally recommend using a Jupyter Notebook.
 
 """
 
@@ -99,3 +99,7 @@ elif a.mode == 'vsweep':
     if not os.path.isdir(a.dpath):
         os.mkdir(a.dpath)
     sr.volume_sweep(a.lim, a.n_atoms, a.U, a.mass, a.radius, a.num_points, dpath=a.dpath)
+elif a.mode == 'tsweep':
+    if not os.path.isdir(a.dpath):
+        os.mkdir(a.dpath)
+    sr.temp_sweep(a.lim, a.n_atoms, a.vol, a.mass, a.radius, a.num_points, dpath=a.dpath)
